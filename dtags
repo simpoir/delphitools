@@ -2,9 +2,9 @@
 
 APPNAME="$0"
 VERSION='0.1'
-AUTHOR='Simon Poirier  <simpoir@gmail.com>'
+AUTHOR='Simon Poirier <simpoir@gmail.com>'
 
-BASEPATH="$(pwd)"
+BASEPATH="./"
 TAGLOCATION="$(pwd)/tags"
 
 function show_help() {
@@ -12,22 +12,22 @@ function show_help() {
 Usage $APPNAME [options]
 by defaults scans current dir and dumps the tag file there.
 options:
-	-h,--help	This help message
-	--version	Show version info and quit
-	-d {dir}	Scan the specified dir
-	-t {tagfile}	Writes to tagfile
+-h,--help This help message
+--version Show version info and quit
+-d {dir} Scan the specified dir
+-t {tagfile} Writes to tagfile
 EOF
     exit 0
 }
 
 function show_version() {
-    echo $APPNAME  $VERSION  $AUTHOR
+    echo $APPNAME $VERSION $AUTHOR
 }
 
 ######################################################################
-# parse args 
+# parse args
 while [[ $# > 0 ]];do
-    lastarg=$1
+lastarg=$1
     case $1 in
         '-h')
             show_help
@@ -40,34 +40,40 @@ while [[ $# > 0 ]];do
             ;;
         '-t')
             shift
-            TAGLOCATION="$1"
+TAGLOCATION="$1"
             ;;
         '-d')
             shift
-            BASEPATH="$1"
+BASEPATH="$1"
             ;;
         *)
             echo "No such option: $1"
             echo "Try $APPNAME --help"
             exit -1
     esac
-    shift || echo missing argument to ${lastarg}
+shift || echo missing argument to ${lastarg}
 done
 
 ######################################################################
 # All right! let's do this
-cat > "$TAGLOCATION" << EOF
-!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
-!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
-!_TAG_PROGRAM_AUTHOR	${AUTHOR}	//
-!_TAG_PROGRAM_NAME	${APPNAME}	//
-!_TAG_PROGRAM_VERSION	${VERSION}	//
-EOF
+rm -f "$TAGLOCATION"
+#cat > "$TAGLOCATION" << EOF
+#!_TAG_FILE_FORMAT 2 /extended format; --format=1 will not append ;" to lines/
+#!_TAG_FILE_SORTED 1 /0=unsorted, 1=sorted, 2=foldcase/
+#!_TAG_PROGRAM_AUTHOR ${AUTHOR} //
+#!_TAG_PROGRAM_NAME ${APPNAME} //
+#!_TAG_PROGRAM_VERSION ${VERSION} //
+#EOF
 
-progs='match($0, /([[:alnum:]]+)[[:blank:]]*=[[:blank:]]*class/, a) { print a[1]"\t"FILENAME"\t/^"$0"$/" }
-match($0, /(procedure|function) ([[:alnum:].]+)/, a) { print a[2]"\t"FILENAME"\t/^"$0"$/" }'
+OLDIFS="${IFS}"
+IFS="\n"
+export LC_ALL="C"
 
-find "$BASEPATH" -name '*.pas' -print |
-xargs gawk -- "${progs}" | sort >> $TAGLOCATION
+progs='match($0, /([[:alnum:]_]+)[[:blank:]]*=[[:blank:]]*class/, a) { print a[1]"\t"FILENAME"\t/^"$0"$/" }
+match($0, /(procedure|function) ([[:alnum:]_.]+)/, a) { print a[2]"\t"FILENAME"\t/^"$0"$/" }'
+
+find "$BASEPATH" -type f -name '*.pas' -exec \
+gawk -- "${progs}" {} + | sort >> "$TAGLOCATION"
 # tag fname /^search
 
+IFS="${OLDIFS}"
