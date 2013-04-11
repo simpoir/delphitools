@@ -70,7 +70,7 @@ IFS="\n"
 export LC_ALL="C"
 
 progs='match($0, /([[:alnum:]_]+)[[:blank:]]*=[[:blank:]]*class/, a) { print a[1]"\t"FILENAME"\t/^"$0"$/" }
-match($0, /(procedure|function) ([[:alnum:]_.]+)/, a) { print a[2]"\t"FILENAME"\t/^"$0"$/" }'
+match($0, /(procedure|function|property) ([[:alnum:]_.]+)/, a) { print a[2]"\t"FILENAME"\t/^"$0"$/" }'
 
 find "$BASEPATH" -type f -name '*.pas' -exec \
 gawk -- "${progs}" {} + | sort >> "$TAGLOCATION"
